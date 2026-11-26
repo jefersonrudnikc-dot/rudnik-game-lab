@@ -4,27 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ponte Zumbi</title>
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#0d2f4a">
-<meta name="description" content="Guie o esquadrão pela ponte e segure a horda de zumbis. Jogue grátis no navegador.">
-<!-- Prévia de link (WhatsApp, redes sociais). Se o domínio mudar, troque https://rudnik-game-lab.vercel.app -->
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="RUDNIK Game Lab">
-<meta property="og:locale" content="pt_BR">
-<meta property="og:title" content="Ponte Zumbi | RUDNIK Game Lab">
-<meta property="og:description" content="Guie o esquadrão pela ponte e segure a horda de zumbis. Jogue grátis no navegador.">
-<meta property="og:url" content="https://rudnik-game-lab.vercel.app/ponte-zumbi/">
-<meta property="og:image" content="https://rudnik-game-lab.vercel.app/og/ponte-zumbi.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Ponte Zumbi | RUDNIK Game Lab">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ponte Zumbi | RUDNIK Game Lab">
-<meta name="twitter:description" content="Guie o esquadrão pela ponte e segure a horda de zumbis. Jogue grátis no navegador.">
-<meta name="twitter:image" content="https://rudnik-game-lab.vercel.app/og/ponte-zumbi.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Baloo+2:wght@800&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
@@ -129,7 +108,6 @@ button:focus-visible{outline:3px solid var(--panel-ink);outline-offset:3px}
 .note{font-size:15px;color:var(--muted);margin:12px 0 0}
 .pauseBtn{position:absolute;bottom:12px;right:12px;width:auto;padding:10px 16px;font-size:18px;background:rgba(0,0,0,.35);color:#fff;border-radius:10px}
 </style>
-<script src="/vip.js"></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -176,7 +154,7 @@ button:focus-visible{outline:3px solid var(--panel-ink);outline-offset:3px}
       <p class="sub">Turbine sua corrida e bata seu recorde.</p>
       <div id="shopList"></div>
       <button id="shopClose" style="margin-top:14px">Voltar</button>
-      <p class="note">Pagamento por Pix, pelo Mercado Pago.</p>
+      <p class="note">Demonstração: as compras são simuladas e nada é cobrado.</p>
     </div>
   </div>
 
@@ -217,7 +195,7 @@ button:focus-visible{outline:3px solid var(--panel-ink);outline-offset:3px}
       </ul>
       <button id="vipBuy">Virar VIP · R$ 4,90</button>
       <button class="ghost" id="vipEnd">Encerrar corrida</button>
-      <p class="note">Ou o VIP total por R$ 9,90, que vale em todos os jogos do Game Lab.</p>
+      <p class="note">Demonstração: a compra é simulada e nada é cobrado.</p>
     </div>
   </div>
 
@@ -264,7 +242,7 @@ const WEAPONS = [
 ];
 
 let best = 0, vip = false;
-try { vip = localStorage.getItem('pz_vip') === '1' || localStorage.getItem('rgl_vip') === '1' || localStorage.getItem('rgl_vip_ponte-zumbi') === '1'; } catch(e) {}
+try { vip = localStorage.getItem('pz_vip') === '1'; } catch(e) {}
 try { best = +localStorage.getItem('pz_best') || 0; } catch(e) {}
 
 let st, running = false, paused = false, last = 0;
@@ -391,7 +369,7 @@ function spawnGates(){
 }
 function spawnBarrel(){
   const d = st.dist;
-  const hp = Math.round(34 + st.wl*44 + d*0.8);
+  const hp = Math.round(24 + st.wl*28 + d*0.45);
   st.ents.push({type:'barrel', x:rnd(0.3,0.7)*(Math.random()<0.5?-1:1), z:FAR, hp, max:hp, r:0.21, flash:0, reward: st.wl < WEAPONS.length-1 ? 'weapon' : 'troops'});
 }
 
@@ -462,8 +440,9 @@ function hitTest(b, z0, z1){
   for(const e of st.ents){
     if(e.dead) continue;
     if(e.type === 'gate'){
-      if(e.used) continue;
-      if(b.x >= e.x0 && b.x <= e.x1 && e.z >= z0 && e.z <= z1 + 0.1) return e;
+      // bullets go THROUGH gates: they count the hit and keep flying
+      if(e.used || b.g === e) continue;
+      if(b.x >= e.x0 && b.x <= e.x1 && e.z >= z0 && e.z <= z1 + 0.1){ b.g = e; damage(e, b.dmg); }
     } else {
       const depth = e.type === 'boss' ? 0.9 : e.type === 'barrel' ? 0.3 : 0.15;
       if(Math.abs(b.x - e.x) < e.r && e.z + depth >= z0 && e.z - depth <= z1) return e;
@@ -476,8 +455,10 @@ function damage(e, dmg){
   if(e.type === 'gate'){
     e.flash = 0.08;
     if(e.op !== '+') return;
-    const cap = Math.ceil(st.N*0.4) + 4;
-    e.acc = (e.acc||0) + (e.val < 0 ? 0.04 : 0.11);
+    if(e.neg === undefined) e.neg = e.val < 0;
+    // a red gate shrinks toward 0 when shot, but never turns into a bonus
+    const cap = e.neg ? 0 : Math.ceil(st.N*0.4) + 4;
+    e.acc = (e.acc||0) + (e.neg ? 0.08 : 0.14);
     while(e.acc >= 1){ e.acc -= 1; if(e.val < cap) e.val += 1; }
     e.flash = 0.08;
     return;
@@ -849,12 +830,6 @@ function toast(msg){
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 1400);
 }
-const payId = it => 'pz-' + it.id + (it.id === 'combo' ? '' : '3');
-if (window.RGL){
-  const map = {};
-  SHOP.filter(it => !it.vip).forEach(it => { map[payId(it)] = () => { for(const k in it.give) inv[k] += it.give[k]; saveInv(); try { paintBoosts(); } catch(_) {} toast('Comprado! ' + it.ic); }; });
-  RGL.register(map);
-}
 function renderShop(){
   $('shopList').innerHTML = SHOP.map(it => {
     const owned = it.vip ? '' : '<em>Você tem: ' + Object.keys(it.give).map(k => BOOSTS[k].ic + ' ' + inv[k]).join('  ') + '</em>';
@@ -878,13 +853,9 @@ function closeShop(){
 $('shopList').addEventListener('click', e => {
   const b = e.target.closest('[data-buy]'); if(!b) return;
   const it = SHOP.find(x => x.id === b.dataset.buy);
-  if(it.vip){
-    if(!window.RGL){ toast('Pagamento indisponível agora.'); return; }
-    RGL.buy('ponte-zumbi', () => { vip = true; try { localStorage.setItem('pz_vip','1'); } catch(_) {} toast('VIP ativado 👑'); renderShop(); });
-    return;
-  }
-  if(!window.RGL){ toast('Pagamento indisponível agora.'); return; }
-  RGL.pay(payId(it), renderShop);
+  if(it.vip){ vip = true; try { localStorage.setItem('pz_vip','1'); } catch(_) {} toast('VIP ativado 👑'); }
+  else { for(const k in it.give) inv[k] += it.give[k]; saveInv(); toast('Comprado! ' + it.ic); }
+  renderShop();
 });
 $('shopClose').addEventListener('click', closeShop);
 document.querySelectorAll('[data-shop]').forEach(b => b.addEventListener('click', () => openShop(b.closest('.overlay').id)));
@@ -1007,17 +978,13 @@ $('againBtn').addEventListener('click', start);
 $('resumeBtn').addEventListener('click', () => setPause(false));
 $('pauseBtn').addEventListener('click', () => setPause(!paused));
 $('vipBuy').addEventListener('click', () => {
-  if(!window.RGL){ toast('Pagamento indisponível agora.'); return; }
-  RGL.buy('ponte-zumbi', unlockVip);
-});
-function unlockVip(){
   vip = true; try { localStorage.setItem('pz_vip','1'); } catch(e) {}
   $('vipOv').classList.add('hidden');
   st.locked = false; paused = false; last = performance.now();
   st.N += 5; buildFormation();
   floatText(W/2, H*0.32, 'VIP ativado', '#ffd34d', 40);
   Music.resume();
-}
+});
 $('vipEnd').addEventListener('click', () => {
   $('vipOv').classList.add('hidden');
   st.locked = false; gameOver();

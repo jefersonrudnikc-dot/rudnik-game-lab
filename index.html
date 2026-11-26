@@ -270,6 +270,14 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
         <button class="buy" id="emailGo" type="button">Gerar Pix · R$ 9,90</button>
         <button class="link" id="emailBack" type="button">Voltar</button>
       </div>
+      <div class="step" id="stepCode" hidden>
+        <label class="lbl" for="vipCode">Código enviado ao e-mail</label>
+        <input class="inp" id="vipCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="000000" maxlength="6" style="text-align:center;letter-spacing:6px;font-size:22px">
+        <p class="hint" id="codeHint">Mandamos um código de 6 dígitos para o seu e-mail. Confira também o spam. Ele vale por 10 minutos.</p>
+        <button class="buy" id="codeGo" type="button">Confirmar código</button>
+        <button class="link" id="codeResend" type="button">Reenviar código</button>
+        <button class="link" id="codeBack" type="button">Voltar</button>
+      </div>
       <div class="step" id="stepPix" hidden>
         <p class="pixT">Pague com Pix</p>
         <img class="qr" id="pixImg" alt="QR Code do Pix">
@@ -366,8 +374,8 @@ function renderVip(){
       <dl><dt>Grátis</dt><dd>${g.free}</dd><dt class="v">VIP</dt><dd class="v">${g.vip}</dd></dl></div></div>`).join('');
   $('vipPrice').hidden = vip; $('vipOnce').hidden = vip;
   $('vipLead').textContent = vip ? 'Seu VIP está ativo em todos os jogos.' : 'Um VIP só para todos os jogos do Game Lab.';
-  if (vip){ ['stepBuy','stepEmail','stepPix'].forEach(id => $(id).hidden = true); $('vipInfo').hidden = false; }
-  else if ($('stepBuy').hidden && $('stepEmail').hidden && $('stepPix').hidden){ show('stepBuy'); }
+  if (vip){ ['stepBuy','stepEmail','stepCode','stepPix'].forEach(id => $(id).hidden = true); $('vipInfo').hidden = false; }
+  else if ($('stepBuy').hidden && $('stepEmail').hidden && $('stepCode').hidden && $('stepPix').hidden){ show('stepBuy'); }
   setNote('');
 }
 
@@ -388,7 +396,7 @@ $('vipOv').addEventListener('click', e => { if (e.target === $('vipOv')) closeVi
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('vipOv').hidden) closeVip(); });
 /* ===== Pix ===== */
 let mode = 'buy', pixId = null, pixExp = 0, pollT = 0, tickT = 0, checking = false;
-function show(step){ ['stepBuy','stepEmail','stepPix'].forEach(id => $(id).hidden = id !== step); $('vipInfo').hidden = step !== 'stepBuy'; document.querySelector('.sheet').scrollTop = 0; }
+function show(step){ ['stepBuy','stepEmail','stepCode','stepPix'].forEach(id => $(id).hidden = id !== step); $('vipInfo').hidden = step !== 'stepBuy'; document.querySelector('.sheet').scrollTop = 0; }
 async function api(path, opts){
   let r;
   try { r = await fetch(API + path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {})); }
@@ -421,19 +429,46 @@ $('emailGo').onclick = async () => {
   const btn = $('emailGo'), label = btn.textContent;
   btn.disabled = true; btn.textContent = mode === 'restore' ? 'Procurando…' : 'Gerando Pix…'; setNote('');
   try {
-    if (mode === 'restore'){
-      const d = await api('/vip-restore', { method: 'POST', body: JSON.stringify({ email }) });
-      d.products.forEach(pr => { if (pr !== 'all') write('rgl_vip_' + pr, '1'); });
-      if (d.products.includes('all')){ grantVip(d.token, email, 'VIP total restaurado neste aparelho 👑'); return; }
-      write('rgl_vip_email', email); if (d.token) write('rgl_vip_token', d.token); refresh();
-      const names = GAMES.filter(g => d.products.includes(g.slug)).map(g => g.title).join(', ');
-      setNote('VIP restaurado em: ' + names + '. O VIP total libera todos os jogos.');
-      return;
-    }
+    if (mode === 'restore'){ await sendCode(email); return; }
     const d = await api('/pix-create', { method: 'POST', body: JSON.stringify({ email, product: 'all' }) });
     write('rgl_vip_email', email);
     if (d.status === 'approved'){ grantVip(d.token, email, 'Você já era VIP. Ativado neste aparelho 👑'); return; }
+    if (d.status === 'owned'){ mode = 'restore'; await sendCode(email, 'Esse e-mail já tem VIP. '); return; }
     startPix(d);
+  } catch(e){ setNote(e.message, true); }
+  finally { btn.disabled = false; btn.textContent = label; }
+};
+/* ===== Restaurar com código enviado ao e-mail ===== */
+let codeCtx = null;
+async function sendCode(email, prefix){
+  const d = await api('/vip-code', { method: 'POST', body: JSON.stringify({ email }) });
+  codeCtx = { email, exp: d.exp, sig: d.sig };
+  $('vipCode').value = '';
+  show('stepCode'); setNote((prefix || '') + 'Código enviado para ' + email + '.'); $('vipCode').focus();
+}
+$('vipCode').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
+$('vipCode').addEventListener('keydown', e => { if (e.key === 'Enter') $('codeGo').click(); });
+$('codeBack').onclick = () => { setNote(''); show('stepEmail'); $('vipEmail').focus(); };
+$('codeResend').onclick = async () => {
+  if (!codeCtx) return;
+  const b = $('codeResend'); b.disabled = true;
+  try { await sendCode(codeCtx.email); } catch(e){ setNote(e.message, true); }
+  finally { b.disabled = false; }
+};
+$('codeGo').onclick = async () => {
+  const code = $('vipCode').value;
+  if (!/^\d{6}$/.test(code)){ setNote('Digite o código de 6 dígitos.', true); $('vipCode').focus(); return; }
+  if (!codeCtx) return;
+  const btn = $('codeGo'), label = btn.textContent, email = codeCtx.email;
+  btn.disabled = true; btn.textContent = 'Conferindo…'; setNote('');
+  try {
+    const d = await api('/vip-restore', { method: 'POST', body: JSON.stringify({ email, code, exp: codeCtx.exp, sig: codeCtx.sig }) });
+    codeCtx = null;
+    d.products.forEach(pr => { if (pr !== 'all') write('rgl_vip_' + pr, '1'); });
+    if (d.products.includes('all')){ grantVip(d.token, email, 'VIP total restaurado neste aparelho 👑'); return; }
+    write('rgl_vip_email', email); if (d.token) write('rgl_vip_token', d.token); refresh();
+    const names = GAMES.filter(g => d.products.includes(g.slug)).map(g => g.title).join(', ');
+    show('stepBuy'); setNote('VIP restaurado em: ' + names + '. O VIP total libera todos os jogos.');
   } catch(e){ setNote(e.message, true); }
   finally { btn.disabled = false; btn.textContent = label; }
 };

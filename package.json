@@ -1,5 +1,6 @@
 {
   "name": "rudnik-game-lab",
   "private": true,
-  "engines": { "node": ">=18" }
+  "engines": { "node": ">=18" },
+  "dependencies": { "nodemailer": "^6.9.16" }
 }

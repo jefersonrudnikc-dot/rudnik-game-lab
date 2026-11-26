@@ -184,17 +184,47 @@
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ $('rglvErr').textContent = 'Confira o e-mail digitado.'; inp.focus(); return; }
       btn.disabled = true; btn.textContent = restore ? 'Procurando…' : 'Gerando Pix…'; $('rglvErr').textContent = '';
       var req = restore
-        ? api('/vip-restore', { method: 'POST', body: JSON.stringify({ email: email }) }).then(function(d){
-            grant(d.products, d.token, email);
-            if (owns(ctx.slug)) return success(d.products.indexOf('all') >= 0 ? 'VIP total restaurado 👑' : 'VIP restaurado 👑');
-            throw new Error('Esse e-mail tem VIP em outro jogo, mas não neste.');
-          })
+        ? api('/vip-code', { method: 'POST', body: JSON.stringify({ email: email }) }).then(function(d){ stepCode(email, d, ''); })
         : api('/pix-create', { method: 'POST', body: JSON.stringify({ email: email, product: ctx.product }) }).then(function(d){
             write('rgl_vip_email', email);
             if (d.status === 'approved'){ grant(d.product, d.token, email); return success('Você já tinha esse VIP 👑'); }
+            if (d.status === 'owned') return api('/vip-code', { method: 'POST', body: JSON.stringify({ email: email }) }).then(function(c){ stepCode(email, c, 'Esse e-mail já tem esse VIP. '); });
             stepPix(d);
           });
       req.catch(function(e){ if (root && $('rglvErr')){ $('rglvErr').textContent = e.message; btn.disabled = false; btn.textContent = label; } });
+    };
+    inp.focus();
+  }
+
+  function stepCode(email, c, prefix){
+    header('Restaurar VIP', 'Confirme o código enviado ao e-mail.');
+    $('rglvB').innerHTML =
+      '<label class="rglv-l" for="rglvK">Código enviado ao e-mail</label>' +
+      '<input class="rglv-in" id="rglvK" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="text-align:center;letter-spacing:6px;font-size:22px">' +
+      '<p class="rglv-hint">' + esc(prefix || '') + 'Mandamos um código de 6 dígitos para ' + esc(email) + '. Confira também o spam. Ele vale por 10 minutos.</p>' +
+      '<p class="rglv-err" id="rglvErr" role="status"></p>' +
+      '<button class="rglv-go" id="rglvGo" type="button">Confirmar código</button>' +
+      '<button class="rglv-lk" id="rglvRe" type="button">Reenviar código</button>' +
+      '<button class="rglv-lk" id="rglvBack" type="button">Voltar</button>';
+    var inp = $('rglvK');
+    inp.addEventListener('input', function(){ inp.value = inp.value.replace(/\D/g, '').slice(0, 6); });
+    inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') $('rglvGo').click(); });
+    $('rglvBack').onclick = function(){ stepEmail('restore'); };
+    $('rglvRe').onclick = function(){
+      var b = this; b.disabled = true;
+      api('/vip-code', { method: 'POST', body: JSON.stringify({ email: email }) })
+        .then(function(n){ stepCode(email, n, ''); })
+        .catch(function(e){ if (root && $('rglvErr')){ $('rglvErr').textContent = e.message; b.disabled = false; } });
+    };
+    $('rglvGo').onclick = function(){
+      var code = inp.value, btn = this, label = btn.textContent;
+      if (!/^\d{6}$/.test(code)){ $('rglvErr').textContent = 'Digite o código de 6 dígitos.'; inp.focus(); return; }
+      btn.disabled = true; btn.textContent = 'Conferindo…'; $('rglvErr').textContent = '';
+      api('/vip-restore', { method: 'POST', body: JSON.stringify({ email: email, code: code, exp: c.exp, sig: c.sig }) }).then(function(d){
+        grant(d.products, d.token, email);
+        if (owns(ctx.slug)) return success(d.products.indexOf('all') >= 0 ? 'VIP total restaurado 👑' : 'VIP restaurado 👑');
+        throw new Error('Esse e-mail tem VIP em outro jogo, mas não neste.');
+      }).catch(function(e){ if (root && $('rglvErr')){ $('rglvErr').textContent = e.message; btn.disabled = false; btn.textContent = label; } });
     };
     inp.focus();
   }

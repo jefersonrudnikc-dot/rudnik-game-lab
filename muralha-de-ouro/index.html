@@ -130,6 +130,10 @@ canvas{display:block;width:100%;height:100%}
 .card .logo.sm{width:170px}
 #wm{position:absolute;left:10px;top:66px;width:118px;pointer-events:none}
 </style>
+<!-- Vercel Web Analytics -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
 <script src="/vip.js"></script>
 </head>
 <body>
@@ -996,5 +1000,6 @@ newGame();showBest();
 requestAnimationFrame(t=>{last=t;loop(t);});
 })();
 </script>
+<script type="module" src="/analytics.js"></script>
 </body>
 </html>

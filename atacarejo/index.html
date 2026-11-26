@@ -124,6 +124,10 @@ th{color:var(--muted);font-weight:600;font-size:13px}
 .coupon small{display:block;color:var(--muted);font-size:12px}
 @media (prefers-reduced-motion:reduce){.toast,.money{transition:none}.hud .right button.next{animation:none}.ad .big,.hint i{animation:none}}
 </style>
+<!-- Vercel Web Analytics -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
 <script src="/vip.js"></script>
 </head>
 <body>
@@ -1286,5 +1290,6 @@ renderer.setAnimationLoop(now => {
 });
 })();
 </script>
+<script type="module" src="/analytics.js"></script>
 </body>
 </html>

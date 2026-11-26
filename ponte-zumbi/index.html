@@ -129,6 +129,10 @@ button:focus-visible{outline:3px solid var(--panel-ink);outline-offset:3px}
 .note{font-size:15px;color:var(--muted);margin:12px 0 0}
 .pauseBtn{position:absolute;bottom:12px;right:12px;width:auto;padding:10px 16px;font-size:18px;background:rgba(0,0,0,.35);color:#fff;border-radius:10px}
 </style>
+<!-- Vercel Web Analytics -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
 <script src="/vip.js"></script>
 </head>
 <body>
@@ -1035,5 +1039,6 @@ idle();
 addEventListener('resize', idle);
 })();
 </script>
+<script type="module" src="/analytics.js"></script>
 </body>
 </html>

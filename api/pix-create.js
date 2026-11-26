@@ -1,7 +1,7 @@
-// POST /api/pix-create  { email, product }  → gera o Pix (ou libera direto se o e-mail já tem acesso)
+// POST /api/pix-create  { email, product }  → gera o Pix (ou avisa que o e-mail já tem acesso)
 // product: 'all' (VIP total), o slug de um jogo ('ponte-zumbi', ...) ou um item ('pz-turbo3', ...)
 const crypto = require('crypto');
-const { PRODUCTS, normEmail, okEmail, ref, sign, mp, owns, expiresIn, fail } = require('./_lib');
+const { PRODUCTS, normEmail, okEmail, ref, mp, owns, expiresIn, fail } = require('./_lib');
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -13,8 +13,9 @@ module.exports = async (req, res) => {
   try {
     // VIP: quem já tem o VIP total não paga mais nada; quem já tem o jogo não paga o jogo de novo.
     // Itens consumíveis sempre geram um Pix novo.
-    if (PRODUCTS[product].kind === 'vip' && await owns(email, 'all')) return res.json({ status: 'approved', product: 'all', token: sign(email, ['all']), already: true });
-    if (PRODUCTS[product].kind === 'vip' && product !== 'all' && await owns(email, product)) return res.json({ status: 'approved', product, token: sign(email, [product]), already: true });
+    // Nesses casos não liberamos direto: a pessoa confirma com o código enviado ao e-mail (/api/vip-code).
+    if (PRODUCTS[product].kind === 'vip' && await owns(email, 'all')) return res.json({ status: 'owned', product: 'all' });
+    if (PRODUCTS[product].kind === 'vip' && product !== 'all' && await owns(email, product)) return res.json({ status: 'owned', product });
 
     const exp = expiresIn(30);
     const p = await mp('/v1/payments', {

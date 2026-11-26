@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RUDNIK | GAME LAB</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#0d2f4a">
+<!-- Prévia de link (WhatsApp, redes sociais). Se o domínio mudar, troque https://rudnik-game-lab.vercel.app -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RUDNIK Game Lab">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="RUDNIK | GAME LAB">
+<meta property="og:description" content="Jogos de bolso para jogar grátis no navegador: Atacarejo Bom Preço, Ponte Zumbi, Muralha de Ouro e mais.">
+<meta property="og:url" content="https://rudnik-game-lab.vercel.app/">
+<meta property="og:image" content="https://rudnik-game-lab.vercel.app/og/hub.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="RUDNIK | GAME LAB">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RUDNIK | GAME LAB">
+<meta name="twitter:description" content="Jogos de bolso para jogar grátis no navegador: Atacarejo Bom Preço, Ponte Zumbi, Muralha de Ouro e mais.">
+<meta name="twitter:image" content="https://rudnik-game-lab.vercel.app/og/hub.jpg">
+<meta name="description" content="Jogos de bolso do RUDNIK Game Lab. Toque e jogue no celular ou no computador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#bfe3ff; --bg2:#9fd0fb; --ink:#0d2f4a; --soft:#2e5576;
+  --paper:#ffffff; --outline:#0d2f4a; --gold:#ffc22e; --gold-ink:#3a2405; --purple:#7a3cf0; --purple2:#5a22c8;
+  --ok:#2f9e5b; --scrim:rgba(6,24,42,.55);
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0d2f4a; --bg2:#123d5f; --ink:#eef6ff; --soft:#a9c3da; --paper:#18476c; --outline:#06182a; --ok:#5fd08f; --scrim:rgba(0,8,16,.7); color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#0d2f4a; --bg2:#123d5f; --ink:#eef6ff; --soft:#a9c3da; --paper:#18476c; --outline:#06182a; --ok:#5fd08f; --scrim:rgba(0,8,16,.7); color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; min-height:100vh; color:var(--ink);
+  font-family:"Nunito",ui-rounded,"Segoe UI",system-ui,sans-serif; font-weight:600;
+  background:
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--ink) 12%, transparent) 1.5px, transparent 0) 0 0/22px 22px,
+    linear-gradient(180deg,var(--bg),var(--bg2));
+  background-color:var(--bg);
+}
+main{max-width:1180px;margin:0 auto;padding:16px 14px 36px}
+.disp{font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800}
+
+/* topo: só a marca */
+header{display:flex;justify-content:center;margin:2px 0 16px}
+header h1{margin:0;line-height:0}
+.logo{width:clamp(150px,44vw,230px);height:auto;overflow:visible;filter:drop-shadow(0 3px 0 rgba(6,24,42,.35))}
+
+/* VIP: um bloco só */
+.vip{
+  position:relative;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;
+  margin:0 0 18px;padding:12px 14px;text-align:left;width:100%;cursor:pointer;
+  font:inherit;color:#fff;background:linear-gradient(135deg,var(--purple),var(--purple2));
+  border:3px solid var(--outline);border-radius:20px;box-shadow:0 5px 0 var(--outline)
+}
+.vip:active{transform:translateY(4px);box-shadow:0 1px 0 var(--outline)}
+.vip:focus-visible{outline:4px solid var(--gold);outline-offset:3px}
+.vip .crown{grid-row:span 2;font-size:2.3rem;line-height:1}
+.vip .t{font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;font-size:1.2rem;line-height:1.1}
+.vip .t small{font-size:.95rem;color:var(--gold)}
+.vip .d{font-size:.9rem;line-height:1.3;opacity:.95}
+.vip.on{grid-template-columns:auto 1fr auto;background:var(--paper);color:var(--ink)}
+.vip.on .crown{grid-row:auto;font-size:1.6rem}
+.vip.on .d{display:none}
+.vip.on .t small{color:var(--ok)}
+
+/* grade de jogos */
+.games{list-style:none;margin:0;padding:0;display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(158px,1fr))}
+@media (min-width:700px){ .games{gap:20px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))} }
+.game{
+  position:relative;display:flex;flex-direction:column;height:100%;
+  text-decoration:none;color:var(--ink);background:var(--paper);
+  border:3px solid var(--outline);border-radius:18px;box-shadow:4px 5px 0 var(--outline);overflow:hidden;
+  transition:transform .12s ease, box-shadow .12s ease
+}
+.game:hover{transform:translateY(-3px);box-shadow:5px 8px 0 var(--outline)}
+.game:active{transform:translate(3px,4px);box-shadow:1px 1px 0 var(--outline)}
+.game:focus-visible{outline:4px solid var(--gold);outline-offset:3px}
+.cover{position:relative;display:block;aspect-ratio:3/4;background:var(--c,#7cc35a);border-bottom:3px solid var(--outline);overflow:hidden}
+.cover img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.game:hover .cover img{transform:scale(1.04)}
+.cover::after{content:"";position:absolute;inset:auto 0 0 0;height:48%;background:linear-gradient(to top,rgba(6,24,42,.92),rgba(6,24,42,0))}
+.cover h2{
+  position:absolute;left:10px;right:10px;bottom:8px;z-index:1;margin:0;color:#fff;
+  font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;
+  text-shadow:0 2px 0 rgba(6,24,42,.8)
+}
+.cover h2 span{display:block;margin-bottom:3px;font-family:"Nunito",ui-rounded,system-ui,sans-serif;font-size:.74rem;font-weight:800;color:var(--gold);text-shadow:none}
+.badge{position:absolute;top:8px;right:8px;z-index:1;font-size:.76rem;font-weight:800;color:var(--gold-ink);background:var(--gold);border:2px solid var(--outline);border-radius:999px;padding:0 8px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 10px}
+.rec{font-size:.78rem;line-height:1.2;color:var(--soft);min-width:0}
+.rec b{display:block;color:var(--ink);font-size:.86rem}
+.play{flex:none;font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;font-size:.95rem;color:var(--gold-ink);background:var(--gold);border:2px solid var(--outline);border-radius:10px;padding:2px 10px 0;box-shadow:0 3px 0 var(--outline)}
+.help{
+  display:flex;align-items:center;gap:12px;margin-top:26px;padding:14px;
+  background:var(--paper);border:3px solid var(--outline);border-radius:18px;box-shadow:0 5px 0 var(--outline)
+}
+.help .ic{font-size:1.9rem;line-height:1}
+.help .tx{flex:1;min-width:0;line-height:1.3}
+.help .tx b{display:block;font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;font-size:1.1rem}
+.help .tx span{color:var(--soft);font-size:.9rem;word-break:break-word}
+.help a,.help .off{flex:none;font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;font-size:.98rem;text-decoration:none;color:#fff;background:var(--purple);border:2px solid var(--outline);border-radius:12px;padding:5px 12px 3px;box-shadow:0 3px 0 var(--outline)}
+.help .off{background:var(--soft);box-shadow:none;opacity:.7}
+.help a:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+@media (max-width:520px){ .help{flex-wrap:wrap} .help .tx{flex:1 1 calc(100% - 52px)} .help a,.help .off{width:100%;text-align:center} }
+.soon{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:100%;min-height:240px;
+  border:3px dashed color-mix(in srgb,var(--ink) 40%,transparent);border-radius:18px;color:var(--soft);text-align:center;padding:16px
+}
+.soon .disp{font-size:1.15rem;color:var(--ink)}
+.soon span:first-child{font-size:2rem}
+
+footer{margin-top:34px;text-align:center;color:var(--soft);font-size:.88rem}
+
+/* janela VIP */
+.ov{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:14px;background:var(--scrim)}
+.ov[hidden]{display:none}
+.sheet{
+  position:relative;width:min(440px,100%);max-height:calc(100% - 16px);overflow:auto;background:var(--paper);color:var(--ink);
+  border:3px solid var(--outline);border-radius:22px;box-shadow:0 7px 0 var(--outline)
+}
+.top{padding:18px 18px 16px;text-align:center;color:#fff;background:linear-gradient(135deg,var(--purple),var(--purple2));border-bottom:3px solid var(--outline)}
+.top .crown{font-size:2.4rem;line-height:1}
+.top h2{margin:2px 0 0;font-size:1.7rem;line-height:1.05}
+.top p{margin:4px 0 0;opacity:.95}
+.price{display:inline-block;margin-top:10px;font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;font-size:2.3rem;line-height:1;color:var(--gold-ink);background:var(--gold);border:3px solid var(--outline);border-radius:14px;padding:6px 14px 2px;box-shadow:0 4px 0 var(--outline)}
+.x{position:absolute;top:8px;right:8px;width:36px;height:36px;border-radius:50%;border:2px solid var(--outline);background:#fff;color:#0d2f4a;font:800 1.1rem/1 "Nunito",sans-serif;cursor:pointer}
+.inner{padding:16px 16px 18px}
+.inner h3{margin:0 0 8px;font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;font-size:1.1rem}
+.all{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:6px}
+.all li{display:flex;gap:8px;align-items:flex-start;line-height:1.35}
+.all li::before{content:"✓";flex:none;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:var(--ok);color:#fff;font-weight:800;font-size:.8rem;margin-top:1px}
+.cmp{display:grid;gap:8px;margin:0 0 16px}
+.g{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:start;padding:8px;border:2px solid color-mix(in srgb,var(--ink) 18%,transparent);border-radius:14px}
+.g img{width:44px;height:58px;object-fit:cover;border-radius:8px;border:2px solid var(--outline)}
+.g b{display:block;margin-bottom:4px}
+.g dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 8px;font-size:.86rem;line-height:1.3}
+.g dt{font-weight:800;color:var(--soft)}
+.g dd{margin:0}
+.g dt.v{color:var(--purple)}
+:root[data-theme="dark"] .g dt.v{color:var(--gold)}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .g dt.v{color:var(--gold)} }
+.g dd.v{font-weight:800}
+.buy{
+  width:100%;font:inherit;font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;font-size:1.3rem;
+  color:var(--gold-ink);background:var(--gold);border:3px solid var(--outline);border-radius:16px;padding:8px 12px 6px;box-shadow:0 5px 0 var(--outline);cursor:pointer
+}
+.buy:active{transform:translateY(4px);box-shadow:0 1px 0 var(--outline)}
+.note{margin:12px 0 0;font-size:.82rem;color:var(--soft);text-align:center}
+.link{display:block;margin:8px auto 0;font:inherit;font-weight:800;background:none;border:0;color:var(--soft);text-decoration:underline;cursor:pointer}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.step{display:grid;gap:8px}
+.step[hidden],#stepBuy[hidden],#vipInfo[hidden]{display:none}
+.lbl{font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;font-size:1.05rem}
+.inp{width:100%;font:inherit;font-weight:700;font-size:1rem;color:var(--ink);background:var(--bg);border:3px solid var(--outline);border-radius:12px;padding:10px 12px}
+.inp:focus{outline:3px solid var(--gold);outline-offset:1px}
+.hint{margin:0;font-size:.86rem;color:var(--soft);line-height:1.35}
+.pixT{margin:0;text-align:center;font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;font-size:1.25rem}
+.qr{display:block;width:200px;height:200px;margin:0 auto;background:#fff;border:3px solid var(--outline);border-radius:14px;padding:6px;image-rendering:pixelated}
+.qr[hidden]{display:none}
+.copy{display:flex;gap:6px}
+.copy .inp{font-size:.82rem;padding:8px 10px}
+.copy button{flex:none;font:inherit;font-weight:800;color:var(--gold-ink);background:var(--gold);border:3px solid var(--outline);border-radius:12px;padding:0 14px;cursor:pointer}
+.wait{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0 0;font-weight:800}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--ok);animation:pulse 1s ease-in-out infinite alternate}
+@keyframes pulse{from{opacity:.25;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.buy:disabled{opacity:.6;cursor:wait}
+.err{color:#d6453d;font-weight:800}
+@media (prefers-reduced-motion:reduce){ .dot{animation:none} }
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--outline);color:#fff;font-weight:800;padding:8px 16px;border-radius:999px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+
+@media (prefers-reduced-motion:reduce){ .game,.cover img,.toast{transition:none} .game:hover,.game:hover .cover img{transform:none} }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="lgW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d3eaff"/></linearGradient>
+    <linearGradient id="lgY" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff27a"/><stop offset="1" stop-color="#ffaa1c"/></linearGradient>
+    <linearGradient id="lgP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a678ff"/><stop offset="1" stop-color="#6a2ee0"/></linearGradient>
+  </defs>
+  <symbol id="rgl" viewBox="-8 4 218 110" overflow="visible">
+    <g font-family="'Baloo 2', ui-rounded, system-ui, sans-serif" font-weight="800" stroke-linejoin="round">
+      <g fill="#ffffff" stroke="#ffffff" stroke-linecap="round">
+        <text x="6" y="64" font-size="50" stroke-width="24" transform="translate(0 4)">Rudnik</text>
+        <text x="38" y="97" font-size="28" letter-spacing="1.5" stroke-width="22" transform="translate(0 3)">GAME LAB</text>
+        <g transform="translate(112 -1) rotate(10) scale(2.1)"><path d="M7 6.5h10a5 5 0 0 1 4.9 6l-.9 4.4a2.6 2.6 0 0 1-4.4 1.3L14.4 16H9.6l-2.2 2.2A2.6 2.6 0 0 1 3 16.9l-.9-4.4a5 5 0 0 1 4.9-6z" stroke-width="6"/></g>
+      </g>
+      <text x="6" y="64" font-size="50" fill="#0d2f4a" stroke="#0d2f4a" stroke-width="12" transform="translate(0 4)">Rudnik</text>
+      <text x="6" y="64" font-size="50" fill="url(#lgW)" stroke="#0d2f4a" stroke-width="9" paint-order="stroke">Rudnik</text>
+      <g transform="translate(112 -1) rotate(10) scale(2.1)">
+        <path d="M7 6.5h10a5 5 0 0 1 4.9 6l-.9 4.4a2.6 2.6 0 0 1-4.4 1.3L14.4 16H9.6l-2.2 2.2A2.6 2.6 0 0 1 3 16.9l-.9-4.4a5 5 0 0 1 4.9-6z" fill="url(#lgP)" stroke="#0d2f4a" stroke-width="1.4"/>
+        <path d="M7.2 9.8v4M5.2 11.8h4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+        <circle cx="15.8" cy="10.6" r="1.35" fill="#ffe15a" stroke="#0d2f4a" stroke-width=".6"/>
+        <circle cx="18.2" cy="13" r="1.35" fill="#7cf0b4" stroke="#0d2f4a" stroke-width=".6"/>
+        <path d="M8 8.2h6" stroke="#fff" stroke-opacity=".45" stroke-width="1" stroke-linecap="round"/>
+      </g>
+      <text x="38" y="97" font-size="28" letter-spacing="1.5" fill="#0d2f4a" stroke="#0d2f4a" stroke-width="9" transform="translate(0 3)">GAME LAB</text>
+      <text x="38" y="97" font-size="28" letter-spacing="1.5" fill="url(#lgY)" stroke="#0d2f4a" stroke-width="7" paint-order="stroke">GAME LAB</text>
+    </g>
+  </symbol>
+</svg>
+
+<main>
+  <header>
+    <h1><svg class="logo" viewBox="-8 4 218 110" role="img" aria-label="RUDNIK | GAME LAB"><use href="#rgl"/></svg></h1>
+  </header>
+
+  <button class="vip" id="vipBar" type="button">
+    <span class="crown" aria-hidden="true">👑</span>
+    <span class="t" id="vipBarT">VIP RUDNIK <small>R$ 9,90</small></span>
+    <span class="d" id="vipBarD">Pagamento único. Sem limites e com bônus em todos os jogos. Toque para ver o que libera.</span>
+  </button>
+
+  <ul class="games" id="games"></ul>
+
+  <section class="help" aria-labelledby="helpT">
+    <span class="ic" aria-hidden="true">✉️</span>
+    <div class="tx"><b id="helpT">Precisa de ajuda?</b><span id="helpTx">Dúvidas, problemas com o VIP ou ideias de jogos: fale com a gente por e-mail.</span></div>
+    <span id="helpBtn"></span>
+  </section>
+
+  <footer>© 2026 RUDNIK Game Lab</footer>
+</main>
+
+<div class="ov" id="vipOv" hidden role="dialog" aria-modal="true" aria-labelledby="vipTitle">
+  <div class="sheet">
+    <button class="x" id="xVip" type="button" aria-label="Fechar">✕</button>
+    <div class="top">
+      <div class="crown" aria-hidden="true">👑</div>
+      <h2 class="disp" id="vipTitle">VIP RUDNIK</h2>
+      <p id="vipLead">Um VIP só para todos os jogos do Game Lab.</p>
+      <div class="price" id="vipPrice">R$ 9,90</div>
+      <p id="vipOnce" style="margin:8px 0 0;font-size:.9rem">Pagamento único, sem assinatura. Sai mais barato que comprar o VIP de cada jogo.</p>
+    </div>
+    <div class="inner">
+      <div id="vipInfo">
+      <h3>Em todos os jogos</h3>
+      <ul class="all">
+        <li>Sem limite de fases, níveis e ondas</li>
+        <li>Bônus exclusivos em cada jogo</li>
+        <li>Vale também para os jogos que chegarem</li>
+        <li>Ativa na hora, sem perder seu progresso</li>
+      </ul>
+      <h3>Jogo a jogo</h3>
+      <div class="cmp" id="cmp"></div>
+      </div>
+      <div id="stepBuy">
+        <button class="buy" id="buyBtn" type="button">Quero ser VIP · R$ 9,90</button>
+        <button class="link" id="restoreLink" type="button">Já sou VIP em outro aparelho</button>
+      </div>
+      <div class="step" id="stepEmail" hidden>
+        <label class="lbl" for="vipEmail" id="emailLbl">Seu e-mail</label>
+        <input class="inp" id="vipEmail" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com" maxlength="200">
+        <p class="hint" id="emailHint">Ele serve para recuperar o VIP se você trocar de aparelho ou de navegador.</p>
+        <button class="buy" id="emailGo" type="button">Gerar Pix · R$ 9,90</button>
+        <button class="link" id="emailBack" type="button">Voltar</button>
+      </div>
+      <div class="step" id="stepPix" hidden>
+        <p class="pixT">Pague com Pix</p>
+        <img class="qr" id="pixImg" alt="QR Code do Pix">
+        <p class="hint">Escaneie o QR Code no app do banco ou use o Pix copia e cola:</p>
+        <div class="copy"><input class="inp" id="pixCode" readonly aria-label="Código Pix copia e cola"><button id="pixCopy" type="button">Copiar</button></div>
+        <p class="wait"><span class="dot" aria-hidden="true"></span><span id="pixWait">Aguardando pagamento…</span></p>
+        <p class="hint" style="text-align:center">O VIP é liberado sozinho assim que o Pix cair.</p>
+        <button class="link" id="pixCancel" type="button">Cancelar</button>
+      </div>
+      <p class="note" id="vipNote" role="status"></p>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ===== Catálogo: para lançar um jogo novo, adicione um item aqui ===== */
+const GAMES = [
+  {
+    slug: 'atacarejo', title: 'Atacarejo Bom Preço', kind: 'Gestão arcade', color: '#7cc35a',
+    href: './atacarejo/', shot: 'capas/atacarejo.webp',
+    free: 'Mapas 1 e 2, paletes no ritmo normal',
+    vip:  'Mapas ilimitados a partir do 3 e paletes 50% mais rápidos',
+    record(){ const s = readJSON('rudnik-gamelab-v3'); if (!s) return 'Loja<b>Nova</b>';
+      return 'Mapa ' + Math.max(1, s.map | 0) + '<b>R$ ' + Math.floor(s.money || 0).toLocaleString('pt-BR') + '</b>'; }
+  },
+  {
+    slug: 'ponte-zumbi', title: 'Ponte Zumbi', kind: 'Ação', color: '#1b8796',
+    href: './ponte-zumbi/', shot: 'capas/ponte-zumbi.webp',
+    free: 'Até o nível 10, começando com 10 soldados',
+    vip:  'Níveis sem limite e 15 soldados desde o início',
+    record(){ const v = parseInt(read('pz_best') || '0', 10); return v > 0 ? 'Recorde<b>' + v.toLocaleString('pt-BR') + ' m</b>' : 'Recorde<b>—</b>'; }
+  },
+  {
+    slug: 'muralha-de-ouro', title: 'Muralha de Ouro', kind: 'Tower defense', color: '#2e6a47',
+    href: './muralha-de-ouro/', shot: 'capas/muralha-de-ouro.webp',
+    free: 'Até a onda 10',
+    vip:  'Ondas sem limite, +50% de moedas e visual dourado no cavaleiro',
+    record(){ const v = parseInt(read('muralha-best') || '0', 10); return v > 0 ? 'Recorde<b>Onda ' + v + '</b>' : 'Recorde<b>—</b>'; }
+  },
+];
+
+/* ===== VIP ===== */
+const VIP_KEY = 'rgl_vip';
+// Pagamento Pix pelo Mercado Pago, feito pelas funções em /api (veja o LEIA-ME).
+const API = '/api';
+
+/* ===== Suporte ===== */
+// Coloque aqui o e-mail de suporte (ex.: 'suporte@seudominio.com.br').
+const SUPPORT_EMAIL = 'rudniklabs@gmail.com';
+
+function supportLink(topic){
+  if (!SUPPORT_EMAIL) return '';
+  const body = [
+    'Escreva sua mensagem aqui:', '', '', '---',
+    'Assunto: ' + topic,
+    'VIP: ' + (isVip() ? 'ativo' : 'não'),
+    'Aparelho: ' + navigator.userAgent
+  ].join('\n');
+  return 'mailto:' + SUPPORT_EMAIL + '?subject=' + encodeURIComponent('Suporte RUDNIK Game Lab: ' + topic) + '&body=' + encodeURIComponent(body);
+}
+function renderHelp(){
+  $('helpBtn').innerHTML = SUPPORT_EMAIL
+    ? `<a href="${supportLink('Ajuda')}">Enviar e-mail</a>`
+    : '<span class="off">E-mail em breve</span>';
+}
+
+function read(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+function write(k, v){ try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch(e){} }
+function readJSON(k){ try { return JSON.parse(read(k) || 'null'); } catch(e){ return null; } }
+const isVip = () => read(VIP_KEY) === '1';
+const $ = id => document.getElementById(id);
+
+function renderGames(){
+  const vip = isVip();
+  $('games').innerHTML = GAMES.map(g => `
+    <li><a class="game" href="${g.href}" target="_top" style="--c:${g.color}" aria-label="Jogar ${g.title}">
+      <span class="cover">
+        <img src="${g.shot}" alt="" loading="lazy" decoding="async">
+        ${vip || read('rgl_vip_' + g.slug) === '1' ? '<span class="badge">👑 VIP</span>' : ''}
+        <h2><span>${g.kind}</span>${g.title}</h2>
+      </span>
+      <span class="row"><span class="rec">${g.record()}</span><span class="play">Jogar</span></span>
+    </a></li>`).join('') +
+    `<li><div class="soon"><span aria-hidden="true">🎮</span><span class="disp">Novo jogo em breve</span><span>O Game Lab ganha jogos novos com frequência.</span></div></li>`;
+}
+
+function renderVip(){
+  const vip = isVip();
+  $('vipBar').classList.toggle('on', vip);
+  $('vipBarT').innerHTML = vip ? 'VIP RUDNIK <small>ativo</small>' : 'VIP RUDNIK <small>R$ 9,90</small>';
+  $('cmp').innerHTML = GAMES.map(g => `
+    <div class="g"><img src="${g.shot}" alt=""><div><b>${g.title}</b>
+      <dl><dt>Grátis</dt><dd>${g.free}</dd><dt class="v">VIP</dt><dd class="v">${g.vip}</dd></dl></div></div>`).join('');
+  $('vipPrice').hidden = vip; $('vipOnce').hidden = vip;
+  $('vipLead').textContent = vip ? 'Seu VIP está ativo em todos os jogos.' : 'Um VIP só para todos os jogos do Game Lab.';
+  if (vip){ ['stepBuy','stepEmail','stepPix'].forEach(id => $(id).hidden = true); $('vipInfo').hidden = false; }
+  else if ($('stepBuy').hidden && $('stepEmail').hidden && $('stepPix').hidden){ show('stepBuy'); }
+  setNote('');
+}
+
+function setNote(msg, isErr){
+  const sup = SUPPORT_EMAIL ? 'Problemas com o VIP? <a href="' + supportLink('VIP') + '" style="color:inherit;font-weight:800">Fale com o suporte</a>' : '';
+  $('vipNote').innerHTML = (msg ? '<span class="' + (isErr ? 'err' : '') + '">' + msg + '</span>' + (sup ? '<br>' : '') : '') + sup;
+}
+
+function refresh(){ renderGames(); renderVip(); renderHelp(); }
+
+let lastFocus = null;
+function openVip(){ lastFocus = document.activeElement; renderVip(); $('vipOv').hidden = false; document.querySelector('.sheet').scrollTop = 0; (isVip() ? $('xVip') : $('buyBtn')).focus({preventScroll:true}); }
+function closeVip(){ $('vipOv').hidden = true; if (lastFocus) lastFocus.focus(); }
+
+$('vipBar').onclick = openVip;
+$('xVip').onclick = closeVip;
+$('vipOv').addEventListener('click', e => { if (e.target === $('vipOv')) closeVip(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('vipOv').hidden) closeVip(); });
+/* ===== Pix ===== */
+let mode = 'buy', pixId = null, pixExp = 0, pollT = 0, tickT = 0, checking = false;
+function show(step){ ['stepBuy','stepEmail','stepPix'].forEach(id => $(id).hidden = id !== step); $('vipInfo').hidden = step !== 'stepBuy'; document.querySelector('.sheet').scrollTop = 0; }
+async function api(path, opts){
+  let r;
+  try { r = await fetch(API + path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {})); }
+  catch(e){ throw new Error('Sem conexão com o pagamento. Confira sua internet.'); }
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Não deu certo agora. Tente de novo.');
+  return d;
+}
+function stopPix(){ clearInterval(pollT); clearInterval(tickT); pollT = tickT = 0; pixId = null; }
+function grantVip(token, email, msg){
+  stopPix();
+  write(VIP_KEY, '1'); if (token) write('rgl_vip_token', token); if (email) write('rgl_vip_email', email);
+  refresh(); toast(msg || 'VIP ativado em todos os jogos 👑');
+}
+function askEmail(m){
+  mode = m;
+  $('emailLbl').textContent = m === 'restore' ? 'E-mail usado na compra' : 'Seu e-mail';
+  $('emailHint').textContent = m === 'restore' ? 'Vamos procurar o seu VIP pago e ativar neste aparelho.' : 'Ele serve para recuperar o VIP se você trocar de aparelho ou de navegador.';
+  $('emailGo').textContent = m === 'restore' ? 'Restaurar VIP' : 'Gerar Pix · R$ 9,90';
+  $('vipEmail').value = read('rgl_vip_email') || $('vipEmail').value;
+  setNote(''); show('stepEmail'); $('vipEmail').focus();
+}
+$('buyBtn').onclick = () => askEmail('buy');
+$('restoreLink').onclick = () => askEmail('restore');
+$('emailBack').onclick = () => { setNote(''); show('stepBuy'); $('buyBtn').focus(); };
+$('vipEmail').addEventListener('keydown', e => { if (e.key === 'Enter') $('emailGo').click(); });
+$('emailGo').onclick = async () => {
+  const email = $('vipEmail').value.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ setNote('Confira o e-mail digitado.', true); $('vipEmail').focus(); return; }
+  const btn = $('emailGo'), label = btn.textContent;
+  btn.disabled = true; btn.textContent = mode === 'restore' ? 'Procurando…' : 'Gerando Pix…'; setNote('');
+  try {
+    if (mode === 'restore'){
+      const d = await api('/vip-restore', { method: 'POST', body: JSON.stringify({ email }) });
+      d.products.forEach(pr => { if (pr !== 'all') write('rgl_vip_' + pr, '1'); });
+      if (d.products.includes('all')){ grantVip(d.token, email, 'VIP total restaurado neste aparelho 👑'); return; }
+      write('rgl_vip_email', email); if (d.token) write('rgl_vip_token', d.token); refresh();
+      const names = GAMES.filter(g => d.products.includes(g.slug)).map(g => g.title).join(', ');
+      setNote('VIP restaurado em: ' + names + '. O VIP total libera todos os jogos.');
+      return;
+    }
+    const d = await api('/pix-create', { method: 'POST', body: JSON.stringify({ email, product: 'all' }) });
+    write('rgl_vip_email', email);
+    if (d.status === 'approved'){ grantVip(d.token, email, 'Você já era VIP. Ativado neste aparelho 👑'); return; }
+    startPix(d);
+  } catch(e){ setNote(e.message, true); }
+  finally { btn.disabled = false; btn.textContent = label; }
+};
+function startPix(d){
+  stopPix();
+  pixId = d.id; pixExp = d.expiresAt || (Date.now() + 30 * 60000);
+  $('pixCode').value = d.qr;
+  $('pixImg').hidden = !d.qrImg; if (d.qrImg) $('pixImg').src = 'data:image/png;base64,' + d.qrImg;
+  show('stepPix'); setNote(''); $('pixCopy').focus();
+  tick(); tickT = setInterval(tick, 1000);
+  pollT = setInterval(checkPix, 4000);
+}
+function tick(){
+  const left = Math.max(0, pixExp - Date.now()), m = Math.floor(left / 60000), s = Math.floor(left / 1000) % 60;
+  $('pixWait').textContent = 'Aguardando pagamento… expira em ' + m + ':' + String(s).padStart(2, '0');
+  if (!left){ stopPix(); show('stepEmail'); setNote('O Pix expirou. Gere um novo para continuar.', true); }
+}
+async function checkPix(){
+  if (!pixId || checking) return;
+  checking = true;
+  try {
+    const d = await api('/pix-status?id=' + encodeURIComponent(pixId));
+    if (d.status === 'approved' && d.product === 'all') grantVip(d.token, read('rgl_vip_email'));
+    else if (['cancelled','expired','rejected','refunded'].includes(d.status)){ stopPix(); show('stepEmail'); setNote('Esse Pix não vale mais. Gere um novo para continuar.', true); }
+  } catch(e){ /* tenta de novo no próximo ciclo */ }
+  finally { checking = false; }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkPix(); });
+$('pixCopy').onclick = async () => {
+  const v = $('pixCode').value;
+  try { await navigator.clipboard.writeText(v); }
+  catch(e){ $('pixCode').select(); try { document.execCommand('copy'); } catch(_){} }
+  $('pixCopy').textContent = 'Copiado!'; setTimeout(() => $('pixCopy').textContent = 'Copiar', 2000);
+  toast('Código Pix copiado. Cole no app do banco.');
+};
+$('pixCancel').onclick = () => { stopPix(); show('stepBuy'); setNote(''); };
+
+let tt = 0;
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2200); }
+
+if (location.hash === '#vip') openVip();
+window.addEventListener('hashchange', () => { if (location.hash === '#vip') openVip(); });
+window.addEventListener('pageshow', refresh);
+refresh();
+</script>
+</body>
+</html>

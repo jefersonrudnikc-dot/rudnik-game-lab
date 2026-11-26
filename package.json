@@ -1,0 +1,5 @@
+{
+  "name": "rudnik-game-lab",
+  "private": true,
+  "engines": { "node": ">=18" }
+}

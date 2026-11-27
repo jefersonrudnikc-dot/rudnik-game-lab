@@ -78,6 +78,14 @@ button:focus-visible{outline:3px solid var(--panel-ink);outline-offset:3px}
 .logo.sm{width:150px}
 .wm{position:absolute;left:10px;bottom:14px;width:118px;height:auto;overflow:visible;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
 .muteBtn{right:70px !important}
+.sub{margin:0 0 14px;color:var(--muted);font-size:18px}
+.fld{display:block;text-align:left;font-weight:700;font-size:17px;margin-bottom:6px}
+.inp{width:100%;box-sizing:border-box;font:500 18px "Barlow Condensed",system-ui,sans-serif;padding:12px;border-radius:10px;border:2px solid rgba(127,140,145,.5);background:transparent;color:var(--panel-ink)}
+textarea.inp{font-size:14px;resize:none;word-break:break-all}
+#pixImg{display:block;width:200px;max-width:70%;margin:0 auto 12px;border-radius:10px;background:#fff;padding:8px}
+.pixErr{color:#d6334a !important;font-weight:700}
+.pixErr:empty{display:none}
+[hidden]{display:none !important}
 .shopBtn{background:transparent;color:var(--panel-ink);border:2px solid currentColor;margin-top:10px;font-size:18px;padding:12px}
 .boosts{position:absolute;right:12px;bottom:76px;display:flex;flex-direction:column;gap:10px}
 .boosts.hidden{display:none}
@@ -154,7 +162,7 @@ button:focus-visible{outline:3px solid var(--panel-ink);outline-offset:3px}
       <p class="sub">Turbine sua corrida e bata seu recorde.</p>
       <div id="shopList"></div>
       <button id="shopClose" style="margin-top:14px">Voltar</button>
-      <p class="note">O VIP é pago por Pix na página do Game Lab. Os itens chegam em breve.</p>
+      <p class="note">Todas as compras são por Pix e liberadas assim que o pagamento é aprovado.</p>
     </div>
   </div>
 
@@ -195,7 +203,28 @@ button:focus-visible{outline:3px solid var(--panel-ink);outline-offset:3px}
       </ul>
       <button id="vipBuy">Virar VIP · R$ 9,90</button>
       <button class="ghost" id="vipEnd">Encerrar corrida</button>
-      <p class="note">Pagamento único por Pix na página do Game Lab. Vale em todos os jogos.</p>
+      <p class="note">Pagamento único por Pix. Vale em todos os jogos do Game Lab.</p>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="pixOv">
+    <div class="card">
+      <h2>Pagar com Pix</h2>
+      <p class="sub" id="pixWhat"></p>
+      <div id="pixStepEmail">
+        <label class="fld" for="pixEmail">Seu e-mail</label>
+        <input class="inp" id="pixEmail" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com">
+        <p class="note" style="margin:6px 0 14px">Serve para recuperar suas compras se trocar de aparelho.</p>
+        <button id="pixGo">Gerar Pix</button>
+      </div>
+      <div id="pixStepQr" hidden>
+        <img id="pixImg" alt="QR Code do Pix" hidden>
+        <textarea class="inp" id="pixCode" rows="3" readonly aria-label="Código Pix copia e cola"></textarea>
+        <button id="pixCopy" style="margin-top:10px">Copiar código Pix</button>
+        <p class="note" id="pixWait" role="status"></p>
+      </div>
+      <p class="note pixErr" id="pixErr" role="alert"></p>
+      <button class="ghost" id="pixCancel">Cancelar</button>
     </div>
   </div>
 
@@ -821,8 +850,8 @@ function draw(){
 
 /* ---------- shop & boosts ---------- */
 let inv = {tiro:0, reforco:0, escudo:0, turbo:0};
-try { Object.assign(inv, JSON.parse(localStorage.getItem('pz_inv') || '{}')); } catch(e) {}
-const saveInv = () => { try { localStorage.setItem('pz_inv', JSON.stringify(inv)); } catch(e) {} };
+try { Object.assign(inv, JSON.parse(localStorage.getItem('pz_inv2') || '{}')); } catch(e) {}
+const saveInv = () => { try { localStorage.setItem('pz_inv2', JSON.stringify(inv)); } catch(e) {} };
 const BOOSTS = {
   tiro:    {ic:'⚡', name:'Tiro 2x',   desc:'Dobra a cadência de tiro por 20 s'},
   reforco: {ic:'🪖', name:'Reforço',   desc:'+20 soldados na hora'},
@@ -830,12 +859,12 @@ const BOOSTS = {
   turbo:   {ic:'🚀', name:'Acelerador',desc:'Avança ~150 m em 3 s, protegido'},
 };
 const SHOP = [
-  {id:'vip',    ic:'👑', name:'VIP Game Lab', desc:'Níveis sem limite e 15 soldados no início, em todos os jogos', tag:'pagamento único por Pix', price:'R$ 9,90', vip:true},
-  {id:'turbo',  ic:'🚀', name:'Acelerador ×3', desc:BOOSTS.turbo.desc, price:'R$ 1,90', give:{turbo:3}},
-  {id:'tiro',   ic:'⚡', name:'Tiro 2x ×3', desc:BOOSTS.tiro.desc, price:'R$ 0,99', give:{tiro:3}},
-  {id:'reforco',ic:'🪖', name:'Reforço ×3', desc:BOOSTS.reforco.desc, price:'R$ 0,99', give:{reforco:3}},
-  {id:'escudo', ic:'🛡️', name:'Escudo ×3', desc:BOOSTS.escudo.desc, price:'R$ 0,99', give:{escudo:3}},
-  {id:'combo',  ic:'🎁', name:'Pacote Sobrevivente', desc:'5 de cada: acelerador, tiro 2x, reforço e escudo', tag:'economize 40%', price:'R$ 3,90', give:{turbo:5, tiro:5, reforco:5, escudo:5}},
+  {id:'vip', product:'all', ic:'👑', name:'VIP Game Lab', desc:'Níveis sem limite e 15 soldados no início, em todos os jogos', tag:'pagamento único por Pix', price:'R$ 9,90', vip:true},
+  {id:'turbo', product:'pz-turbo3', ic:'🚀', name:'Acelerador ×3', desc:BOOSTS.turbo.desc, price:'R$ 1,90', give:{turbo:3}},
+  {id:'tiro', product:'pz-tiro3', ic:'⚡', name:'Tiro 2x ×3', desc:BOOSTS.tiro.desc, price:'R$ 0,99', give:{tiro:3}},
+  {id:'reforco', product:'pz-reforco3', ic:'🪖', name:'Reforço ×3', desc:BOOSTS.reforco.desc, price:'R$ 0,99', give:{reforco:3}},
+  {id:'escudo', product:'pz-escudo3', ic:'🛡️', name:'Escudo ×3', desc:BOOSTS.escudo.desc, price:'R$ 0,99', give:{escudo:3}},
+  {id:'combo', product:'pz-combo', ic:'🎁', name:'Pacote Sobrevivente', desc:'5 de cada: acelerador, tiro 2x, reforço e escudo', tag:'economize 40%', price:'R$ 3,90', give:{turbo:5, tiro:5, reforco:5, escudo:5}},
 ];
 function toast(msg){
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
@@ -845,7 +874,7 @@ function renderShop(){
   $('shopList').innerHTML = SHOP.map(it => {
     const owned = it.vip ? '' : '<em>Você tem: ' + Object.keys(it.give).map(k => BOOSTS[k].ic + ' ' + inv[k]).join('  ') + '</em>';
     const tag = it.tag ? '<em>' + it.tag + '</em>' : '';
-    const btn = it.vip ? (vip ? '<button disabled>Ativo</button>' : '<button data-buy="' + it.id + '">' + it.price + '</button>') : '<button disabled>Em breve</button>';
+    const btn = it.vip && vip ? '<button disabled>Ativo</button>' : '<button data-buy="' + it.id + '">' + it.price + '</button>';
     return '<div class="item' + (it.vip ? ' vip' : '') + '"><div class="ic">' + it.ic + '</div><div class="tx"><b>' + it.name + '</b><span>' + it.desc + '</span>' + tag + (owned && !it.tag ? owned : '') + '</div>' + btn + '</div>';
   }).join('');
 }
@@ -863,11 +892,118 @@ function closeShop(){
 }
 $('shopList').addEventListener('click', e => {
   const b = e.target.closest('[data-buy]'); if(!b) return;
-  const it = SHOP.find(x => x.id === b.dataset.buy);
-  if(it.vip) goVip();
+  pixOpen(SHOP.find(x => x.id === b.dataset.buy), 'shopOv');
 });
 $('shopClose').addEventListener('click', closeShop);
 document.querySelectorAll('[data-shop]').forEach(b => b.addEventListener('click', () => openShop(b.closest('.overlay').id)));
+
+
+/* ---------- Pix (Mercado Pago, pelas funções /api do hub) ---------- */
+const API = '/api';
+const pix = {item:null, from:null, id:null, exp:0, poll:0, tick:0, checking:false};
+const lsGet = k => { try { return localStorage.getItem(k); } catch(e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch(e) {} };
+async function api(path, opts){
+  let r;
+  try { r = await fetch(API + path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {})); }
+  catch(e){ throw new Error('Sem conexão com o pagamento. Confira sua internet.'); }
+  const d = await r.json().catch(() => ({}));
+  if(!r.ok) throw new Error(d.error || 'Não deu certo agora. Tente de novo.');
+  return d;
+}
+function pixStep(qr){ $('pixStepEmail').hidden = qr; $('pixStepQr').hidden = !qr; }
+function pixErr(msg){ $('pixErr').innerHTML = msg || ''; }
+function pixStop(){ clearInterval(pix.poll); clearInterval(pix.tick); pix.poll = pix.tick = 0; pix.id = null; }
+function pixOpen(item, fromId){
+  pix.item = item; pix.from = fromId;
+  if(fromId) $(fromId).classList.add('hidden');
+  $('pixWhat').textContent = item.name + ' · ' + item.price;
+  $('pixEmail').value = lsGet('rgl_vip_email') || $('pixEmail').value;
+  pixErr(''); pixStep(false);
+  $('pixOv').classList.remove('hidden');
+  $('pixEmail').focus();
+}
+function pixClose(){
+  pixStop();
+  $('pixOv').classList.add('hidden');
+  if(pix.from) $(pix.from).classList.remove('hidden');
+  if(pix.from === 'shopOv') renderShop();
+  paintBoosts();
+}
+$('pixEmail').addEventListener('keydown', e => { if(e.key === 'Enter') $('pixGo').click(); });
+$('pixGo').addEventListener('click', async () => {
+  const email = $('pixEmail').value.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ pixErr('Confira o e-mail digitado.'); $('pixEmail').focus(); return; }
+  const btn = $('pixGo'); btn.disabled = true; btn.textContent = 'Gerando Pix…'; pixErr('');
+  try {
+    const d = await api('/pix-create', { method: 'POST', body: JSON.stringify({ email, product: pix.item.product }) });
+    lsSet('rgl_vip_email', email);
+    if(d.status === 'owned'){ pixErr('Esse e-mail já é VIP. <a href="/#vip" target="_top" style="color:inherit">Ative o VIP neste aparelho pelo Game Lab</a>.'); return; }
+    pixStart(d);
+  } catch(e){ pixErr(e.message); }
+  finally { btn.disabled = false; btn.textContent = 'Gerar Pix'; }
+});
+function pixStart(d){
+  pixStop();
+  pix.id = d.id; pix.exp = d.expiresAt || (Date.now() + 30*60000);
+  $('pixCode').value = d.qr || '';
+  $('pixImg').hidden = !d.qrImg; if(d.qrImg) $('pixImg').src = 'data:image/png;base64,' + d.qrImg;
+  pixStep(true); $('pixCopy').focus();
+  pixTick(); pix.tick = setInterval(pixTick, 1000);
+  pix.poll = setInterval(pixCheck, 4000);
+}
+function pixTick(){
+  const left = Math.max(0, pix.exp - Date.now()), m = Math.floor(left/60000), sec = Math.floor(left/1000) % 60;
+  $('pixWait').textContent = 'Aguardando pagamento… expira em ' + m + ':' + String(sec).padStart(2,'0');
+  if(!left){ pixStop(); pixStep(false); pixErr('O Pix expirou. Gere um novo para continuar.'); }
+}
+async function pixCheck(){
+  if(!pix.id || pix.checking) return;
+  pix.checking = true;
+  try {
+    const d = await api('/pix-status?id=' + encodeURIComponent(pix.id));
+    if(d.status === 'approved' && d.product === pix.item.product) pixGrant(pix.id, d);
+    else if(['cancelled','expired','rejected','refunded'].includes(d.status)){ pixStop(); pixStep(false); pixErr('Esse Pix não vale mais. Gere um novo para continuar.'); }
+  } catch(e){ /* tenta de novo no próximo ciclo */ }
+  finally { pix.checking = false; }
+}
+document.addEventListener('visibilitychange', () => { if(!document.hidden && pix.id) pixCheck(); });
+function pixGrant(id, d){
+  // cada pagamento libera uma vez só, mesmo se a página for recarregada
+  let done = [];
+  try { done = JSON.parse(lsGet('pz_pix_done') || '[]'); } catch(e) {}
+  if(done.includes(id)){ pixClose(); return; }
+  done.push(id); lsSet('pz_pix_done', JSON.stringify(done.slice(-200)));
+  const it = pix.item;
+  if(it.vip){
+    lsSet('rgl_vip', '1'); if(d.token) lsSet('rgl_vip_token', d.token);
+    vip = true;
+  } else {
+    for(const k in it.give) inv[k] += it.give[k];
+    saveInv();
+  }
+  const from = pix.from;
+  pixStop();
+  $('pixOv').classList.add('hidden');
+  if(from === 'vipOv' && st && st.locked){
+    st.locked = false; paused = false; last = performance.now();
+    floatText(W/2, H*0.32, 'VIP ativado', '#ffd34d', 40);
+    Music.resume();
+  } else if(from){
+    $(from).classList.remove('hidden');
+    if(from === 'shopOv') renderShop();
+  }
+  paintBoosts();
+  toast(it.vip ? 'VIP ativado 👑' : 'Pagamento aprovado! ' + it.ic);
+}
+$('pixCopy').addEventListener('click', async () => {
+  const v = $('pixCode').value;
+  try { await navigator.clipboard.writeText(v); }
+  catch(e){ $('pixCode').select(); try { document.execCommand('copy'); } catch(_) {} }
+  $('pixCopy').textContent = 'Copiado!'; setTimeout(() => $('pixCopy').textContent = 'Copiar código Pix', 2000);
+  toast('Código copiado. Cole no app do banco.');
+});
+$('pixCancel').addEventListener('click', pixClose);
 
 function paintBoosts(){
   const box = $('boosts');
@@ -922,6 +1058,7 @@ function start(){
   $('overOv').classList.add('hidden');
   $('pauseOv').classList.add('hidden');
   paused = false; running = true; last = performance.now();
+  $('boosts').classList.remove('hidden'); paintBoosts();
   Music.setTempo(1); Music.start();
   requestAnimationFrame(frame);
 }
@@ -985,7 +1122,7 @@ $('playBtn').addEventListener('click', start);
 $('againBtn').addEventListener('click', start);
 $('resumeBtn').addEventListener('click', () => setPause(false));
 $('pauseBtn').addEventListener('click', () => setPause(!paused));
-$('vipBuy').addEventListener('click', goVip);
+$('vipBuy').addEventListener('click', () => pixOpen(SHOP[0], 'vipOv'));
 $('vipEnd').addEventListener('click', () => {
   $('vipOv').classList.add('hidden');
   st.locked = false; gameOver();

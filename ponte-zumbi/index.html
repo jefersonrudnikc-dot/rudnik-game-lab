@@ -323,15 +323,15 @@ const Music = (() => {
 
 /* ---------- formation ---------- */
 function buildFormation(){
-  const n = Math.min(st.N, 70);
+  const n = Math.min(st.N, 45);
   const f = [];
   for(let i=0;i<n;i++){
-    const a = i*2.39996, r = 0.058*Math.sqrt(i);
+    const a = i*2.39996, r = 0.03*Math.sqrt(i);
     f.push({dx: r*Math.cos(a), dz: r*Math.sin(a)*1.1, ph: Math.random()*6.28});
   }
   st.form = f;
 }
-const squadR = () => 0.08 + 0.058*Math.sqrt(Math.min(st.N,70));
+const squadR = () => 0.07 + 0.03*Math.sqrt(Math.min(st.N,45));
 
 /* ---------- spawning ---------- */
 function rnd(a,b){ return a + Math.random()*(b-a); }
@@ -353,8 +353,8 @@ function spawnGates(){
   const mk = kind => {
     if(kind === 'mul') return {op:'x', val: Math.random() < 0.12 + d/1500 ? 3 : 2};
     if(kind === 'div') return {op:'/', val: Math.random() < 0.2 + d/1200 ? 3 : 2};
-    if(kind === 'pos') return {op:'+', val: Math.round(rnd(2,4) + d/70)};
-    return {op:'+', val: -Math.round(rnd(6,11) + d/22)};
+    if(kind === 'pos') return {op:'+', val: Math.round(rnd(2,4) + d/70 + st.N*rnd(0.03,0.08))};
+    return {op:'+', val: -Math.round(rnd(6,11) + d/22 + st.N*rnd(0.12,0.25))};
   };
   // minus shows up far more often than plus or times
   const combos = [['pos','neg'],['pos','neg'],['neg','neg'],['neg','neg'],['mul','neg'],['div','pos'],['mul','div'],['neg','div'],['pos','div']];
@@ -454,13 +454,9 @@ function hitTest(b, z0, z1){
 function damage(e, dmg){
   if(e.type === 'gate'){
     e.flash = 0.08;
-    if(e.op !== '+') return;
-    if(e.neg === undefined) e.neg = e.val < 0;
-    // a red gate shrinks toward 0 when shot, but never turns into a bonus
-    const cap = e.neg ? 0 : Math.ceil(st.N*0.4) + 4;
-    e.acc = (e.acc||0) + (e.neg ? 0.08 : 0.14);
-    while(e.acc >= 1){ e.acc -= 1; if(e.val < cap) e.val += 1; }
-    e.flash = 0.08;
+    // shooting raises the number at a steady pace (per second, not per bullet),
+    // so a big squad can't erase a red gate instantly; red can still turn positive
+    if(e.op === '+') e.hitT = 0.12;
     return;
   }
   e.hp -= dmg; e.flash = 0.06;
@@ -485,7 +481,7 @@ function damage(e, dmg){
   }
 }
 
-function gateLabel(e){ return e.op === 'x' ? '×' + e.val : e.op === '/' ? '÷' + e.val : (e.val>=0?'+':'−') + Math.abs(e.val); }
+function gateLabel(e){ return e.op === 'x' ? '×' + e.val : e.op === '/' ? '÷' + e.val : e.val === 0 ? '0' : (e.val>0?'+':'−') + Math.abs(e.val); }
 
 /* ---------- effects ---------- */
 function splat(x,y,s,color,n){
@@ -549,9 +545,19 @@ function update(dt){
       } else if(e.z < -1.2) e.dead = true;
     } else if(e.type === 'gate'){
       if(e.flash) e.flash = Math.max(0, e.flash - dt);
+      if(e.hitT > 0 && !e.used){
+        e.hitT -= dt;
+        if(e.start === undefined) e.start = e.val;
+        const rate = e.start < 0 ? 2 + Math.abs(e.start)*0.12 : 2 + st.N*0.02;
+        const cap = Math.ceil(st.N*0.4) + 4;
+        e.acc = (e.acc||0) + rate*dt;
+        while(e.acc >= 1){ e.acc -= 1; if(e.val < cap) e.val += 1; }
+      }
+      // the squad always goes through exactly one gate of the pair: the half of the lane its center is in
+      const inMyHalf = Math.sign(st.px || 1) === Math.sign(e.x) && (Math.abs(st.px) < 0.5) === (Math.abs(e.x) < 0.5);
       if(!e.used && e.z <= 0.05){
         e.used = true;
-        if(st.turboT <= 0 && st.px >= e.x0 && st.px <= e.x1){
+        if(st.turboT <= 0 && inMyHalf){
           const before = st.N;
           st.N = e.op === 'x' ? Math.min(999, st.N*e.val) : e.op === '/' ? Math.floor(st.N/e.val) : Math.max(0, Math.min(999, st.N + e.val));
           const [sx,sy] = P(st.px, 0);

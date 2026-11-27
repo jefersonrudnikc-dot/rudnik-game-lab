@@ -79,6 +79,24 @@ button:focus-visible{outline:3px solid var(--panel-ink);outline-offset:3px}
 .wm{position:absolute;left:10px;bottom:14px;width:118px;height:auto;overflow:visible;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
 .muteBtn{right:70px !important}
 .sub{margin:0 0 14px;color:var(--muted);font-size:18px}
+.card.vs{padding:0;overflow:hidden;text-align:left;background:#fff;color:#10242a}
+.vsHead{position:relative;background:linear-gradient(135deg,#7d42e6,#5a28cf);color:#fff;padding:18px 60px 16px 20px}
+.vsHead h2{color:#fff;margin:0 0 4px;font-size:28px}
+.vsHead p{margin:0;font-weight:700;font-size:18px}
+.vsX{position:absolute;top:14px;right:14px;width:40px;height:40px;padding:0;border-radius:50%;background:#fff;color:#10242a;border:3px solid #1a1a2e;font-size:18px}
+.vsBody{padding:18px}
+.vsBody .sub,.vsBody .note{color:#46666c}
+.vsBody .fld,.vsBody .inp{color:#10242a}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin:0 0 12px;padding:14px;border-radius:18px;border:3px solid #c9d4e2;background:#eef4fb;color:#10242a;font-family:"Barlow Condensed",sans-serif;box-shadow:0 4px 0 #c9d4e2}
+.opt.best{border-color:#6a35d9;background:#efe7fd;box-shadow:0 4px 0 #4b22a8}
+.opt .ot{flex:1;min-width:0}
+.opt .pill{display:inline-block;background:#6a35d9;color:#fff;border-radius:999px;padding:2px 10px;font-weight:700;font-size:14px;margin-bottom:6px}
+.opt b{display:block;font:400 19px Bungee,Impact,sans-serif;margin-bottom:2px}
+.opt .ot>span:last-child{display:block;font-size:17px;font-weight:500;color:#3d4f6b}
+.opt .pr{flex:none;background:#ffc21a;color:#1a1200;border:3px solid #1a1a2e;border-radius:12px;padding:6px 10px;font:400 18px Bungee,Impact,sans-serif}
+.lnk{display:block;width:auto;margin:8px auto 0;background:none;color:#10242a;font:700 18px "Barlow Condensed",sans-serif;text-decoration:underline;padding:8px}
+.inp.code{text-align:center;font-size:30px;letter-spacing:10px}
+#vsImg{display:block;width:200px;max-width:70%;margin:0 auto 12px}
 .fld{display:block;text-align:left;font-weight:700;font-size:17px;margin-bottom:6px}
 .inp{width:100%;box-sizing:border-box;font:500 18px "Barlow Condensed",system-ui,sans-serif;padding:12px;border-radius:10px;border:2px solid rgba(127,140,145,.5);background:transparent;color:var(--panel-ink)}
 textarea.inp{font-size:14px;resize:none;word-break:break-all}
@@ -162,7 +180,7 @@ textarea.inp{font-size:14px;resize:none;word-break:break-all}
       <p class="sub">Turbine sua corrida e bata seu recorde.</p>
       <div id="shopList"></div>
       <button id="shopClose" style="margin-top:14px">Voltar</button>
-      <p class="note">Todas as compras são por Pix e liberadas assim que o pagamento é aprovado.</p>
+      <p class="note">Todas as compras são por Pix. O VIP pode ser recuperado pelo e-mail em outro aparelho; os reforços ficam salvos só neste aparelho.</p>
     </div>
   </div>
 
@@ -199,11 +217,57 @@ textarea.inp{font-size:14px;resize:none;word-break:break-all}
       <p class="stat" style="margin-bottom:12px">Você chegou ao limite da versão grátis. Com o <b style="display:inline;font-size:inherit;color:var(--accent)">VIP</b> você segue a corrida:</p>
       <ul class="how" style="margin-bottom:16px">
         <li><span class="sw" style="background:#ffd34d"></span><span><b>Níveis sem limite</b> a partir do 10</span></li>
-        <li><span class="sw" style="background:#ffd34d"></span><span><b>15 soldados</b> no início de cada partida, em todos os jogos do Game Lab</span></li>
+        <li><span class="sw" style="background:#ffd34d"></span><span><b>15 soldados</b> no início de cada partida</span></li>
       </ul>
-      <button id="vipBuy">Virar VIP · R$ 9,90</button>
+      <button id="vipBuy">Ver opções VIP</button>
       <button class="ghost" id="vipEnd">Encerrar corrida</button>
-      <p class="note">Pagamento único por Pix. Vale em todos os jogos do Game Lab.</p>
+      <p class="note">Pagamento único por Pix: VIP total R$ 9,90 ou só este jogo R$ 4,90.</p>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="vsOv">
+    <div class="card vs" role="dialog" aria-labelledby="vsTitle">
+      <div class="vsHead">
+        <h2 id="vsTitle">👑 Seja VIP</h2>
+        <p>Escolha como liberar. Pagamento único por Pix.</p>
+        <button class="vsX" id="vsX" aria-label="Fechar">✕</button>
+      </div>
+      <div class="vsBody">
+        <div id="vsChoose">
+          <button class="opt best" data-prod="all">
+            <span class="ot"><span class="pill">Mais vantajoso</span><b>VIP total</b><span>Todos os jogos do Game Lab, inclusive os próximos</span></span>
+            <span class="pr">R$ 9,90</span>
+          </button>
+          <button class="opt" data-prod="ponte-zumbi">
+            <span class="ot"><b>Só Ponte Zumbi</b><span>VIP apenas neste jogo</span></span>
+            <span class="pr">R$ 4,90</span>
+          </button>
+          <button class="lnk" id="vsRestore">Já comprei em outro aparelho</button>
+        </div>
+        <div id="vsEmail" hidden>
+          <label class="fld" for="vsEmailIn" id="vsEmailLbl">Seu e-mail</label>
+          <input class="inp" id="vsEmailIn" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com">
+          <p class="note" id="vsEmailHint" style="margin:6px 0 14px"></p>
+          <button id="vsEmailGo">Gerar Pix</button>
+          <button class="lnk" id="vsBack">Voltar</button>
+        </div>
+        <div id="vsCode" hidden>
+          <p class="sub">Enviamos um código de 6 dígitos para <b id="vsCodeMail"></b>.</p>
+          <p class="note" id="vsCodeNote" hidden style="margin:-6px 0 10px"></p>
+          <input class="inp code" id="vsCodeIn" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="Código de 6 dígitos">
+          <button id="vsCodeGo" style="margin-top:12px">Confirmar</button>
+          <button class="lnk" id="vsCodeRe">Reenviar código</button>
+        </div>
+        <div id="vsQr" hidden>
+          <p class="sub" id="vsWhat"></p>
+          <img id="vsImg" alt="QR Code do Pix" hidden>
+          <textarea class="inp" id="vsCodeTxt" rows="3" readonly aria-label="Código Pix copia e cola"></textarea>
+          <button id="vsCopy" style="margin-top:10px">Copiar código Pix</button>
+          <p class="note" id="vsWait" role="status"></p>
+          <button class="lnk" id="vsCancel">Cancelar</button>
+        </div>
+        <p class="note pixErr" id="vsErr" role="alert"></p>
+      </div>
     </div>
   </div>
 
@@ -859,7 +923,7 @@ const BOOSTS = {
   turbo:   {ic:'🚀', name:'Acelerador',desc:'Avança ~150 m em 3 s, protegido'},
 };
 const SHOP = [
-  {id:'vip', product:'all', ic:'👑', name:'VIP Game Lab', desc:'Níveis sem limite e 15 soldados no início, em todos os jogos', tag:'pagamento único por Pix', price:'R$ 9,90', vip:true},
+  {id:'vip', product:'all', ic:'👑', name:'VIP', desc:'Níveis sem limite e 15 soldados no início', tag:'VIP total R$ 9,90 ou só este jogo R$ 4,90', price:'R$ 4,90', vip:true},
   {id:'turbo', product:'pz-turbo3', ic:'🚀', name:'Acelerador ×3', desc:BOOSTS.turbo.desc, price:'R$ 1,90', give:{turbo:3}},
   {id:'tiro', product:'pz-tiro3', ic:'⚡', name:'Tiro 2x ×3', desc:BOOSTS.tiro.desc, price:'R$ 0,99', give:{tiro:3}},
   {id:'reforco', product:'pz-reforco3', ic:'🪖', name:'Reforço ×3', desc:BOOSTS.reforco.desc, price:'R$ 0,99', give:{reforco:3}},
@@ -874,7 +938,7 @@ function renderShop(){
   $('shopList').innerHTML = SHOP.map(it => {
     const owned = it.vip ? '' : '<em>Você tem: ' + Object.keys(it.give).map(k => BOOSTS[k].ic + ' ' + inv[k]).join('  ') + '</em>';
     const tag = it.tag ? '<em>' + it.tag + '</em>' : '';
-    const btn = it.vip && vip ? '<button disabled>Ativo</button>' : '<button data-buy="' + it.id + '">' + it.price + '</button>';
+    const btn = it.vip && vip ? '<button disabled>Ativo</button>' : '<button data-buy="' + it.id + '">' + (it.vip ? 'Ver opções' : it.price) + '</button>';
     return '<div class="item' + (it.vip ? ' vip' : '') + '"><div class="ic">' + it.ic + '</div><div class="tx"><b>' + it.name + '</b><span>' + it.desc + '</span>' + tag + (owned && !it.tag ? owned : '') + '</div>' + btn + '</div>';
   }).join('');
 }
@@ -892,7 +956,8 @@ function closeShop(){
 }
 $('shopList').addEventListener('click', e => {
   const b = e.target.closest('[data-buy]'); if(!b) return;
-  pixOpen(SHOP.find(x => x.id === b.dataset.buy), 'shopOv');
+  const it = SHOP.find(x => x.id === b.dataset.buy);
+  it.vip ? openVipSheet('shopOv') : pixOpen(it, 'shopOv');
 });
 $('shopClose').addEventListener('click', closeShop);
 document.querySelectorAll('[data-shop]').forEach(b => b.addEventListener('click', () => openShop(b.closest('.overlay').id)));
@@ -1004,6 +1069,130 @@ $('pixCopy').addEventListener('click', async () => {
   toast('Código copiado. Cole no app do banco.');
 });
 $('pixCancel').addEventListener('click', pixClose);
+
+
+/* ---------- VIP por Pix: VIP total ou só este jogo, e recuperação pelo e-mail ---------- */
+const GAME_SLUG = 'ponte-zumbi', GAME_NAME = 'Ponte Zumbi';
+const VS = {from:null, mode:'buy', prod:null, ch:null, mail:'', id:null, exp:0, poll:0, tick:0, checking:false};
+const VS_LABEL = {all:'VIP total · R$ 9,90', [GAME_SLUG]:'VIP só ' + GAME_NAME + ' · R$ 4,90'};
+const vsErr = m => { $('vsErr').innerHTML = m || ''; };
+function vsShow(id){ ['vsChoose','vsEmail','vsCode','vsQr'].forEach(k => $(k).hidden = k !== id); vsErr(''); }
+function vsStop(){ clearInterval(VS.poll); clearInterval(VS.tick); VS.poll = VS.tick = 0; VS.id = null; }
+function openVipSheet(from){
+  VS.from = from; if(from) $(from).classList.add('hidden');
+  vsShow('vsChoose'); $('vsOv').classList.remove('hidden');
+  document.querySelector('#vsChoose .opt').focus();
+}
+function closeVipSheet(){
+  vsStop(); $('vsOv').classList.add('hidden');
+  if(VS.from) $(VS.from).classList.remove('hidden');
+  if(VS.from === 'shopOv') renderShop();
+}
+function vsAskEmail(mode, prod){
+  VS.mode = mode; VS.prod = prod || null;
+  $('vsEmailLbl').textContent = mode === 'restore' ? 'E-mail usado na compra' : 'Seu e-mail';
+  $('vsEmailHint').textContent = mode === 'restore' ? 'Vamos mandar um código para esse e-mail para confirmar que é você.' : 'Serve para recuperar o VIP se você trocar de aparelho ou de navegador.';
+  $('vsEmailGo').textContent = mode === 'restore' ? 'Enviar código' : 'Gerar Pix · ' + (prod === 'all' ? 'R$ 9,90' : 'R$ 4,90');
+  $('vsEmailIn').value = lsGet('rgl_vip_email') || $('vsEmailIn').value;
+  vsShow('vsEmail'); $('vsEmailIn').focus();
+}
+function vsAskCode(email, note){
+  VS.mail = email;
+  $('vsCodeMail').textContent = email;
+  $('vsCodeNote').hidden = !note; $('vsCodeNote').textContent = note || '';
+  $('vsCodeIn').value = ''; $('vsCodeRe').textContent = 'Reenviar código';
+  vsShow('vsCode'); $('vsCodeIn').focus();
+}
+const vsSendCode = email => api('/vip-code', { method: 'POST', body: JSON.stringify({ email }) });
+function vsApply(products, token, email){
+  (products || []).forEach(pr => lsSet(pr === 'all' ? 'rgl_vip' : 'rgl_vip_' + pr, '1'));
+  if(token) lsSet('rgl_vip_token', token);
+  if(email) lsSet('rgl_vip_email', email);
+  vip = readVip();
+  if(!vip){ vsShow('vsChoose'); vsErr('Esse e-mail não tem VIP do ' + GAME_NAME + '. Escolha uma opção para liberar.'); return; }
+  vsStop(); $('vsOv').classList.add('hidden');
+  const from = VS.from;
+  if(from === 'vipOv' && st && st.locked){
+    st.locked = false; paused = false; last = performance.now();
+    floatText(W/2, H*0.32, 'VIP ativado', '#ffd34d', 40);
+    Music.resume();
+  } else if(from){
+    $(from).classList.remove('hidden');
+    if(from === 'shopOv') renderShop();
+  }
+  toast('VIP ativado 👑');
+}
+document.querySelectorAll('#vsChoose .opt').forEach(b => b.addEventListener('click', () => vsAskEmail('buy', b.dataset.prod)));
+$('vsRestore').addEventListener('click', () => vsAskEmail('restore'));
+$('vsBack').addEventListener('click', () => vsShow('vsChoose'));
+$('vsX').addEventListener('click', closeVipSheet);
+$('vsEmailIn').addEventListener('keydown', e => { if(e.key === 'Enter') $('vsEmailGo').click(); });
+$('vsEmailGo').addEventListener('click', async () => {
+  const email = $('vsEmailIn').value.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ vsErr('Confira o e-mail digitado.'); $('vsEmailIn').focus(); return; }
+  const btn = $('vsEmailGo'), label = btn.textContent;
+  btn.disabled = true; btn.textContent = VS.mode === 'restore' ? 'Enviando…' : 'Gerando Pix…'; vsErr('');
+  try {
+    if(VS.mode === 'restore'){ VS.ch = await vsSendCode(email); vsAskCode(email, ''); return; }
+    const d = await api('/pix-create', { method: 'POST', body: JSON.stringify({ email, product: VS.prod }) });
+    lsSet('rgl_vip_email', email);
+    if(d.status === 'owned'){ VS.ch = await vsSendCode(email); vsAskCode(email, 'Esse e-mail já é VIP. Confirme para ativar aqui.'); return; }
+    vsStartPix(d);
+  } catch(e){ vsErr(e.message); }
+  finally { btn.disabled = false; btn.textContent = label; }
+});
+$('vsCodeIn').addEventListener('input', () => { const k = $('vsCodeIn'); k.value = k.value.replace(/\D/g, '').slice(0, 6); if(k.value.length === 6) $('vsCodeGo').click(); });
+$('vsCodeIn').addEventListener('keydown', e => { if(e.key === 'Enter') $('vsCodeGo').click(); });
+$('vsCodeRe').addEventListener('click', async () => {
+  const b = $('vsCodeRe'); b.textContent = 'Enviando…';
+  try { VS.ch = await vsSendCode(VS.mail); b.textContent = 'Código reenviado'; vsErr(''); }
+  catch(e){ b.textContent = 'Reenviar código'; vsErr(e.message); }
+});
+$('vsCodeGo').addEventListener('click', async () => {
+  const code = $('vsCodeIn').value, btn = $('vsCodeGo');
+  if(!/^\d{6}$/.test(code)){ vsErr('Digite os 6 dígitos do código.'); $('vsCodeIn').focus(); return; }
+  if(btn.disabled) return;
+  btn.disabled = true; btn.textContent = 'Conferindo…'; vsErr('');
+  try {
+    const d = await api('/vip-restore', { method: 'POST', body: JSON.stringify({ email: VS.mail, code, exp: VS.ch && VS.ch.exp, sig: VS.ch && VS.ch.sig }) });
+    vsApply(d.products, d.token, VS.mail);
+  } catch(e){ vsErr(e.message); $('vsCodeIn').select(); }
+  finally { btn.disabled = false; btn.textContent = 'Confirmar'; }
+});
+function vsStartPix(d){
+  vsStop();
+  VS.id = d.id; VS.exp = d.expiresAt || (Date.now() + 30*60000);
+  $('vsWhat').textContent = VS_LABEL[VS.prod] || '';
+  $('vsCodeTxt').value = d.qr || '';
+  $('vsImg').hidden = !d.qrImg; if(d.qrImg) $('vsImg').src = 'data:image/png;base64,' + d.qrImg;
+  vsShow('vsQr'); $('vsCopy').focus();
+  vsTick(); VS.tick = setInterval(vsTick, 1000);
+  VS.poll = setInterval(vsCheck, 4000);
+}
+function vsTick(){
+  const left = Math.max(0, VS.exp - Date.now()), m = Math.floor(left/60000), sec = Math.floor(left/1000) % 60;
+  $('vsWait').textContent = 'Aguardando pagamento… expira em ' + m + ':' + String(sec).padStart(2,'0');
+  if(!left){ vsStop(); vsShow('vsEmail'); vsErr('O Pix expirou. Gere um novo para continuar.'); }
+}
+async function vsCheck(){
+  if(!VS.id || VS.checking) return;
+  VS.checking = true;
+  try {
+    const d = await api('/pix-status?id=' + encodeURIComponent(VS.id));
+    if(d.status === 'approved' && d.product === VS.prod) vsApply([VS.prod], d.token, lsGet('rgl_vip_email'));
+    else if(['cancelled','expired','rejected','refunded'].includes(d.status)){ vsStop(); vsShow('vsEmail'); vsErr('Esse Pix não vale mais. Gere um novo para continuar.'); }
+  } catch(e){ /* tenta de novo no próximo ciclo */ }
+  finally { VS.checking = false; }
+}
+document.addEventListener('visibilitychange', () => { if(!document.hidden && VS.id) vsCheck(); });
+$('vsCopy').addEventListener('click', async () => {
+  const v = $('vsCodeTxt').value;
+  try { await navigator.clipboard.writeText(v); }
+  catch(e){ $('vsCodeTxt').select(); try { document.execCommand('copy'); } catch(_) {} }
+  $('vsCopy').textContent = 'Copiado!'; setTimeout(() => $('vsCopy').textContent = 'Copiar código Pix', 2000);
+  toast('Código copiado. Cole no app do banco.');
+});
+$('vsCancel').addEventListener('click', () => { vsStop(); vsShow('vsChoose'); });
 
 function paintBoosts(){
   const box = $('boosts');
@@ -1122,7 +1311,7 @@ $('playBtn').addEventListener('click', start);
 $('againBtn').addEventListener('click', start);
 $('resumeBtn').addEventListener('click', () => setPause(false));
 $('pauseBtn').addEventListener('click', () => setPause(!paused));
-$('vipBuy').addEventListener('click', () => pixOpen(SHOP[0], 'vipOv'));
+$('vipBuy').addEventListener('click', () => openVipSheet('vipOv'));
 $('vipEnd').addEventListener('click', () => {
   $('vipOv').classList.add('hidden');
   st.locked = false; gameOver();

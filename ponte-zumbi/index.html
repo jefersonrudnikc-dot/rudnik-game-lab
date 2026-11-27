@@ -154,7 +154,7 @@ button:focus-visible{outline:3px solid var(--panel-ink);outline-offset:3px}
       <p class="sub">Turbine sua corrida e bata seu recorde.</p>
       <div id="shopList"></div>
       <button id="shopClose" style="margin-top:14px">Voltar</button>
-      <p class="note">Demonstração: as compras são simuladas e nada é cobrado.</p>
+      <p class="note">O VIP é pago por Pix na página do Game Lab. Os itens chegam em breve.</p>
     </div>
   </div>
 
@@ -191,11 +191,11 @@ button:focus-visible{outline:3px solid var(--panel-ink);outline-offset:3px}
       <p class="stat" style="margin-bottom:12px">Você chegou ao limite da versão grátis. Com o <b style="display:inline;font-size:inherit;color:var(--accent)">VIP</b> você segue a corrida:</p>
       <ul class="how" style="margin-bottom:16px">
         <li><span class="sw" style="background:#ffd34d"></span><span><b>Níveis sem limite</b> a partir do 10</span></li>
-        <li><span class="sw" style="background:#ffd34d"></span><span><b>+5 soldados</b> agora e <b>15</b> no início de cada partida</span></li>
+        <li><span class="sw" style="background:#ffd34d"></span><span><b>15 soldados</b> no início de cada partida, em todos os jogos do Game Lab</span></li>
       </ul>
-      <button id="vipBuy">Virar VIP · R$ 4,90</button>
+      <button id="vipBuy">Virar VIP · R$ 9,90</button>
       <button class="ghost" id="vipEnd">Encerrar corrida</button>
-      <p class="note">Demonstração: a compra é simulada e nada é cobrado.</p>
+      <p class="note">Pagamento único por Pix na página do Game Lab. Vale em todos os jogos.</p>
     </div>
   </div>
 
@@ -242,7 +242,12 @@ const WEAPONS = [
 ];
 
 let best = 0, vip = false;
-try { vip = localStorage.getItem('pz_vip') === '1'; } catch(e) {}
+// VIP só vale se foi comprado pelo Pix no hub do Game Lab (VIP total ou VIP deste jogo)
+const HUB_VIP_URL = '/#vip';
+const readVip = () => { try { return localStorage.getItem('rgl_vip') === '1' || localStorage.getItem('rgl_vip_ponte-zumbi') === '1'; } catch(e) { return false; } };
+vip = readVip();
+const goVip = () => { try { window.top.location.href = HUB_VIP_URL; } catch(e) { location.href = HUB_VIP_URL; } };
+window.addEventListener('focus', () => { vip = readVip(); });
 try { best = +localStorage.getItem('pz_best') || 0; } catch(e) {}
 
 let st, running = false, paused = false, last = 0;
@@ -825,7 +830,7 @@ const BOOSTS = {
   turbo:   {ic:'🚀', name:'Acelerador',desc:'Avança ~150 m em 3 s, protegido'},
 };
 const SHOP = [
-  {id:'vip',    ic:'👑', name:'VIP', desc:'Níveis sem limite e 15 soldados no início', tag:'pagamento único', price:'R$ 4,90', vip:true},
+  {id:'vip',    ic:'👑', name:'VIP Game Lab', desc:'Níveis sem limite e 15 soldados no início, em todos os jogos', tag:'pagamento único por Pix', price:'R$ 9,90', vip:true},
   {id:'turbo',  ic:'🚀', name:'Acelerador ×3', desc:BOOSTS.turbo.desc, price:'R$ 1,90', give:{turbo:3}},
   {id:'tiro',   ic:'⚡', name:'Tiro 2x ×3', desc:BOOSTS.tiro.desc, price:'R$ 0,99', give:{tiro:3}},
   {id:'reforco',ic:'🪖', name:'Reforço ×3', desc:BOOSTS.reforco.desc, price:'R$ 0,99', give:{reforco:3}},
@@ -840,7 +845,7 @@ function renderShop(){
   $('shopList').innerHTML = SHOP.map(it => {
     const owned = it.vip ? '' : '<em>Você tem: ' + Object.keys(it.give).map(k => BOOSTS[k].ic + ' ' + inv[k]).join('  ') + '</em>';
     const tag = it.tag ? '<em>' + it.tag + '</em>' : '';
-    const btn = it.vip && vip ? '<button disabled>Ativo</button>' : '<button data-buy="' + it.id + '">' + it.price + '</button>';
+    const btn = it.vip ? (vip ? '<button disabled>Ativo</button>' : '<button data-buy="' + it.id + '">' + it.price + '</button>') : '<button disabled>Em breve</button>';
     return '<div class="item' + (it.vip ? ' vip' : '') + '"><div class="ic">' + it.ic + '</div><div class="tx"><b>' + it.name + '</b><span>' + it.desc + '</span>' + tag + (owned && !it.tag ? owned : '') + '</div>' + btn + '</div>';
   }).join('');
 }
@@ -859,9 +864,7 @@ function closeShop(){
 $('shopList').addEventListener('click', e => {
   const b = e.target.closest('[data-buy]'); if(!b) return;
   const it = SHOP.find(x => x.id === b.dataset.buy);
-  if(it.vip){ vip = true; try { localStorage.setItem('pz_vip','1'); } catch(_) {} toast('VIP ativado 👑'); }
-  else { for(const k in it.give) inv[k] += it.give[k]; saveInv(); toast('Comprado! ' + it.ic); }
-  renderShop();
+  if(it.vip) goVip();
 });
 $('shopClose').addEventListener('click', closeShop);
 document.querySelectorAll('[data-shop]').forEach(b => b.addEventListener('click', () => openShop(b.closest('.overlay').id)));
@@ -920,7 +923,6 @@ function start(){
   $('pauseOv').classList.add('hidden');
   paused = false; running = true; last = performance.now();
   Music.setTempo(1); Music.start();
-  $('boosts').classList.remove('hidden'); paintBoosts();
   requestAnimationFrame(frame);
 }
 
@@ -983,14 +985,7 @@ $('playBtn').addEventListener('click', start);
 $('againBtn').addEventListener('click', start);
 $('resumeBtn').addEventListener('click', () => setPause(false));
 $('pauseBtn').addEventListener('click', () => setPause(!paused));
-$('vipBuy').addEventListener('click', () => {
-  vip = true; try { localStorage.setItem('pz_vip','1'); } catch(e) {}
-  $('vipOv').classList.add('hidden');
-  st.locked = false; paused = false; last = performance.now();
-  st.N += 5; buildFormation();
-  floatText(W/2, H*0.32, 'VIP ativado', '#ffd34d', 40);
-  Music.resume();
-});
+$('vipBuy').addEventListener('click', goVip);
 $('vipEnd').addEventListener('click', () => {
   $('vipOv').classList.add('hidden');
   st.locked = false; gameOver();
